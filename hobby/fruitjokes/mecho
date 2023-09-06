@@ -1,0 +1,30 @@
+
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: echo-vother-v2
+  annotations:
+    description: wasmCloud Echo Example
+    version: v0.0.3
+spec:
+  components:
+  - name: echo
+    type: actor
+    properties:
+      image: wasmcloud.azurecr.io/echo:0.3.8
+    traits:
+    - type: daemonscaler
+      properties:
+        replicas: 1
+        spread: []
+  - name: httpserver
+    type: capability
+    properties:
+      image: wasmcloud.azurecr.io/httpserver:0.17.0
+      contract: wasmcloud:httpserver
+    traits:
+    - type: daemonscaler
+      properties:
+        replicas: 1
+        spread: []
+

@@ -17,6 +17,7 @@ use inventory::*;
 // Listen on munderdifflin.rundown, publish all inventory contents to munderdifflin.rundown.<branch>
 
 const TOPIC_PREFIX: &str = "munderdifflin.";
+const INVENTORY_PREFIX: &str = "inventory:";
 
 #[derive(Debug, Default, Actor, HealthResponder)]
 #[services(Actor, MessageSubscriber)]

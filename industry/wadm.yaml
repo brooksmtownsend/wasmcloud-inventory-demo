@@ -1,0 +1,70 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: munder-difflin
+  annotations:
+    version: v0.0.2
+    description: "Industry leading paper company"
+spec:
+  components:
+    - name: branchmanager
+      type: actor
+      properties:
+        image: file:///Users/brooks/demo/wasmcon/industry/branchmanager/build/branchmanager_s.wasm
+      traits:
+        - type: daemonscaler
+          properties:
+            replicas: 1
+            spread:
+              - name: branch
+                requirements:
+                  branch: "true"
+        - type: linkdef
+          properties:
+            target: messaging
+            values:
+              SUBSCRIPTION: munderdifflin.>
+        - type: linkdef
+          properties:
+            target: keyvalue
+            values:
+              URL: redis://127.0.0.1:6379
+    - name: corporatedashboard
+      type: actor
+      properties:
+        image: file:///Users/brooks/demo/wasmcon/industry/corporatedashboard/build/corporatedashboard_s.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            replicas: 3
+            spread:
+              - name: corporate
+                requirements:
+                  cosmonic_managed: "true"
+
+    - name: messaging
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/nats_messaging:0.17.3
+        contract: wasmcloud:messaging
+      traits:
+        - type: daemonscaler
+          properties:
+            replicas: 1
+            spread:
+              - name: branch
+                requirements:
+                  branch: "true"
+    - name: keyvalue
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/kvredis:0.22.0
+        contract: wasmcloud:keyvalue
+      traits:
+        - type: daemonscaler
+          properties:
+            replicas: 1
+            spread:
+              - name: branch
+                requirements:
+                  branch: "true"

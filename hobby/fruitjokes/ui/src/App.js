@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChakraProvider, Box, Grid, Center, Image, Button, Text } from "@chakra-ui/react";
+import { ChakraProvider, Box, Grid, Center, Button, Text } from "@chakra-ui/react";
 import { Logo } from "./Logo";
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 
@@ -39,6 +39,11 @@ function App() {
               <Button onClick={fetchJoke} colorScheme="blue" mb="4">
                 Generate Fruit Joke
               </Button>
+              {!punchlineVisible && joke && (
+                <Button onClick={revealPunchline} colorScheme="green" ml="2" mb="4">
+                  Reveal Punchline
+                </Button>
+              )}
               {joke && (
                 <Text fontSize="2xl" fontWeight="bold" mb="2">
                   {joke}?
@@ -48,11 +53,6 @@ function App() {
                 <Text color="gray.200" fontSize="xl">
                   {punchline}
                 </Text>
-              )}
-              {!punchlineVisible && joke && (
-                <Button onClick={revealPunchline} colorScheme="green" mt="2">
-                  Reveal Punchline
-                </Button>
               )}
             </Box>
           </Center>

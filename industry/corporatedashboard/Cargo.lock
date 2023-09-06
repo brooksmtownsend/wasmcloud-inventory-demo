@@ -398,6 +398,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
 
 [[package]]
+name = "corporatedashboard"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "futures",
+ "mime_guess",
+ "rust-embed",
+ "serde_bytes",
+ "serde_json",
+ "wasmbus-rpc",
+ "wasmcloud-interface-httpserver",
+ "wasmcloud-interface-keyvalue",
+ "wasmcloud-interface-numbergen",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -639,22 +655,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a62bc1cf6f830c2ec14a513a9fb124d0a213a629668a4186f329db21fe045652"
 dependencies = [
  "percent-encoding",
-]
-
-[[package]]
-name = "fruitjokes"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "futures",
- "mime_guess",
- "rust-embed",
- "serde_bytes",
- "serde_json",
- "wasmbus-rpc",
- "wasmcloud-interface-httpserver",
- "wasmcloud-interface-keyvalue",
- "wasmcloud-interface-numbergen",
 ]
 
 [[package]]

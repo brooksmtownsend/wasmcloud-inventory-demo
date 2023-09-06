@@ -1,7 +1,7 @@
 [package]
 name = "branchmanager"
 version = "0.1.0"
-authors = [ "" ]
+authors = ["Brooks Townsend <brooks@cosmonic.com>"]
 edition = "2021"
 
 [lib]
@@ -13,6 +13,7 @@ futures = "0.3"
 serde = "1.0.188"
 serde_json = "1.0"
 wasmbus-rpc = "0.14"
+wasmcloud-interface-keyvalue = "0.11.0"
 wasmcloud-interface-logging = "0.10.0"
 wasmcloud-interface-messaging = "0.10"
 

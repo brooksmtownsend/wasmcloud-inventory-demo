@@ -295,6 +295,7 @@ dependencies = [
  "serde",
  "serde_json",
  "wasmbus-rpc",
+ "wasmcloud-interface-keyvalue",
  "wasmcloud-interface-logging",
  "wasmcloud-interface-messaging",
 ]
@@ -2492,6 +2493,21 @@ dependencies = [
  "uuid",
  "wascap",
  "wasmbus-macros",
+ "weld-codegen",
+]
+
+[[package]]
+name = "wasmcloud-interface-keyvalue"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f53b6d1f3a117eb4ebb33d13d540b17960ea9eeeeae0ab1037b5122c3171bda4"
+dependencies = [
+ "async-trait",
+ "log",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "wasmbus-rpc",
  "weld-codegen",
 ]
 
