@@ -7,6 +7,9 @@ build: ## Build the project
 	cd ui && npm run build
 	@cosmo build
 
+localrun: build ## Rebuild and rerun this actor
+	@wash stop actor $(wash get hosts -o json | jq -r '.hosts[0].id') MB7AYIRSBBCYXP5RJQFH6DHV6DZEZCAZHPAWUTQ2XR3SFBXAZJ5OSIXK --count 0
+
 run: build ## Run the actor on Cosmonic
 	@cosmo launch
 

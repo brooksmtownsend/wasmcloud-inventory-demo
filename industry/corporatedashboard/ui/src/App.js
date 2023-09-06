@@ -14,9 +14,9 @@ import { Logo } from './Logo';
 
 const WASMCLOUD_COLOR = "#00C389";
 const backupData = [
-  { id: 1, item: "Paper", quantity: 500 },
-  { id: 2, item: "Printers", quantity: 10 },
-  { id: 3, item: "Ink", quantity: 20 },
+  { id: 1, branch: "Stanford", item_type: "Paper", quantity: 500 },
+  { id: 2, branch: "Stanford", item_type: "Printers", quantity: 10 },
+  { id: 3, branch: "Stanford", item_type: "Ink", quantity: 20 },
 ];
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
 
   const fetchData = () => {
     // Fetch data from your API endpoint
-    fetch("your-api-url")
+    fetch("/inventory")
       .then((response) => response.json())
       .then((data) => setInventoryData(data))
       .catch((error) => {
@@ -32,6 +32,16 @@ function App() {
         console.error("Error fetching data:", error);
       });
   };
+
+  const rundown = () => {
+    fetch("/rundown")
+      .then((response) => console.dir(response))
+      .catch((error) => {
+        setInventoryData(backupData);
+        console.error("Error fetching data:", error);
+      });
+  };
+
 
   useEffect(() => {
     fetchData(); // Fetch data when the component mounts
@@ -49,10 +59,12 @@ function App() {
             </Text>
             <Box width="100%">
               <Button color={WASMCLOUD_COLOR} onClick={fetchData} mb={4}>Query Inventory</Button>
+              <Button color={WASMCLOUD_COLOR} onClick={rundown} mb={4}>Request Rundown</Button>
               <Box overflowX="auto" textAlign="center">
                 <Table variant="simple" width="100%" maxWidth="50vw" mx="auto">
                   <Thead>
                     <Tr>
+                      <Th>Branch</Th>
                       <Th>Item</Th>
                       <Th textAlign="right">Quantity</Th> {/* Right-align Quantity column */}
                     </Tr>
@@ -60,7 +72,9 @@ function App() {
                   <Tbody>
                     {inventoryData.map((item) => (
                       <Tr key={item.id}>
-                        <Td>{item.item}</Td>
+                        {/* TODO: No hardcode */}
+                        <Td>{item.branch || "Stanford"}</Td>
+                        <Td>{item.item_type}</Td>
                         <Td textAlign="right">{item.quantity}</Td> {/* Right-align Quantity cell */}
                       </Tr>
                     ))}

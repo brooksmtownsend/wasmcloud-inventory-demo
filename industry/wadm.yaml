@@ -3,7 +3,7 @@ kind: Application
 metadata:
   name: munder-difflin
   annotations:
-    version: v0.0.2
+    version: v0.0.5
     description: "Industry leading paper company"
 spec:
   components:
@@ -15,10 +15,10 @@ spec:
         - type: daemonscaler
           properties:
             replicas: 1
-            spread:
-              - name: branch
-                requirements:
-                  branch: "true"
+            # spread:
+            #   - name: branch
+            #     requirements:
+            #       branch: "true"
         - type: linkdef
           properties:
             target: messaging
@@ -34,14 +34,34 @@ spec:
       properties:
         image: file:///Users/brooks/demo/wasmcon/industry/corporatedashboard/build/corporatedashboard_s.wasm
       traits:
-        - type: spreadscaler
+        - type: daemonscaler
           properties:
             replicas: 3
-            spread:
-              - name: corporate
-                requirements:
-                  cosmonic_managed: "true"
+            # spread:
+            #   - name: corporate
+            #     requirements:
+            #       cosmonic_managed: "true"
+        - type: linkdef
+          properties:
+            target: messaging
+            values:
+              SUBSCRIPTION: corporate.>
+        - type: linkdef
+          properties:
+            target: keyvalue
+            values:
+              URL: redis://127.0.0.1:6379
+        - type: linkdef
+          properties:
+            target: httpserver
+            values:
+              PORT: 8081
 
+    - name: httpserver
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/httpserver:0.19.1
+        contract: wasmcloud:httpserver
     - name: messaging
       type: capability
       properties:
@@ -51,10 +71,10 @@ spec:
         - type: daemonscaler
           properties:
             replicas: 1
-            spread:
-              - name: branch
-                requirements:
-                  branch: "true"
+            # spread:
+            #   - name: branch
+            #     requirements:
+            #       branch: "true"
     - name: keyvalue
       type: capability
       properties:
@@ -64,7 +84,7 @@ spec:
         - type: daemonscaler
           properties:
             replicas: 1
-            spread:
-              - name: branch
-                requirements:
-                  branch: "true"
+            # spread:
+            #   - name: branch
+            #     requirements:
+            #       branch: "true"

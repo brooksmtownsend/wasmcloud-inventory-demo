@@ -405,12 +405,13 @@ dependencies = [
  "futures",
  "mime_guess",
  "rust-embed",
+ "serde",
  "serde_bytes",
  "serde_json",
  "wasmbus-rpc",
  "wasmcloud-interface-httpserver",
  "wasmcloud-interface-keyvalue",
- "wasmcloud-interface-numbergen",
+ "wasmcloud-interface-messaging",
 ]
 
 [[package]]
@@ -2601,13 +2602,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasmcloud-interface-numbergen"
+name = "wasmcloud-interface-messaging"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5261923d3a3b0eb9a3dfdace613dfaea838434222a3970594648f270e4da0e51"
+checksum = "11608f7ac598493d0d8ebbd089c93a7037e013dea108e282f47f1cf1096fa658"
 dependencies = [
  "async-trait",
- "futures",
+ "log",
  "serde",
  "serde_bytes",
  "serde_json",

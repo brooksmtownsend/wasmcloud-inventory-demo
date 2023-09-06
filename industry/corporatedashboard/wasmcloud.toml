@@ -3,4 +3,4 @@ language = "rust"
 type = "actor"
 
 [actor]
-claims = ["wasmcloud:httpserver", "wasmcloud:keyvalue"]
+claims = ["wasmcloud:httpserver", "wasmcloud:keyvalue", "wasmcloud:messaging"]
