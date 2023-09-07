@@ -7,6 +7,7 @@ import {
   Grid,
   theme,
   Button,
+  Menu, MenuButton, MenuList, MenuItem,
   Table, Thead, Tbody, Tr, Th, Td
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
@@ -22,18 +23,18 @@ const backupData = [
 function App() {
   const [inventoryData, setInventoryData] = useState([]);
 
-  const fetchData = () => {
+  const fetchInventory = () => {
     // Fetch data from your API endpoint
     fetch("/inventory")
       .then((response) => response.json())
-      .then((data) => setInventoryData(data))
+      .then((data) => setInventoryData(data.flat(Infinity)))
       .catch((error) => {
         setInventoryData(backupData);
         console.error("Error fetching data:", error);
       });
   };
 
-  const rundown = () => {
+  const fetchRundown = () => {
     fetch("/rundown")
       .then((response) => console.dir(response))
       .catch((error) => {
@@ -42,9 +43,15 @@ function App() {
       });
   };
 
+  const [selectedItem, setSelectedItem] = React.useState(null);
+
+  const handleMenuItemClick = (itemValue) => {
+    setSelectedItem(itemValue);
+  };
+
 
   useEffect(() => {
-    fetchData(); // Fetch data when the component mounts
+    fetchInventory(); // Fetch data when the component mounts
   }, []);
 
   return (
@@ -58,9 +65,24 @@ function App() {
               Branch Dashboard
             </Text>
             <Box width="100%">
-              <Button color={WASMCLOUD_COLOR} onClick={fetchData} mb={4}>Query Inventory</Button>
-              <Button color={WASMCLOUD_COLOR} onClick={rundown} mb={4}>Request Rundown</Button>
-              <Box overflowX="auto" textAlign="center">
+              <Box overflowX="auto" textAlign="center" mb={4}>
+                <Button color={WASMCLOUD_COLOR} onClick={fetchInventory} mr={2}>Query Inventory</Button>
+                <Button color={WASMCLOUD_COLOR} onClick={fetchRundown} mr={2}>Request Rundown</Button>
+                <Menu>
+                  {({ isOpen }) => (
+                    <>
+                      <MenuButton isActive={isOpen} as={Button} rightIcon="▼">
+                        Select Branch
+                      </MenuButton>
+                      <MenuList>
+                        <MenuItem onClick={() => handleMenuItemClick(null)}>All</MenuItem>
+                        {[...new Set(inventoryData.map((i) => i.branch))].map((item) => (
+                          <MenuItem key={item} onClick={() => handleMenuItemClick(item)}>{item}</MenuItem>
+                        ))}
+                      </MenuList>
+                    </>
+                  )}
+                </Menu>
                 <Table variant="simple" width="100%" maxWidth="50vw" mx="auto">
                   <Thead>
                     <Tr>
@@ -70,10 +92,15 @@ function App() {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {inventoryData.map((item) => (
+                    {inventoryData.filter((item) => {
+                      if (!selectedItem) {
+                        return true;
+                      } else {
+                        return item.branch === selectedItem;
+                      }
+                    }).map((item) => (
                       <Tr key={item.id}>
-                        {/* TODO: No hardcode */}
-                        <Td>{item.branch || "Stanford"}</Td>
+                        <Td>{item.branch}</Td>
                         <Td>{item.item_type}</Td>
                         <Td textAlign="right">{item.quantity}</Td> {/* Right-align Quantity cell */}
                       </Tr>

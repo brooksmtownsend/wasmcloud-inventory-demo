@@ -27,8 +27,11 @@ impl MessageSubscriber for CorporatedashboardActor {
             "" => (),
             branch => {
                 // De/serialization trip just to validate typing
-                let inventory: Vec<InventoryItem> = serde_json::from_slice(&msg.body)
+                let mut inventory: Vec<InventoryItem> = serde_json::from_slice(&msg.body)
                     .map_err(|e| RpcError::Deser(e.to_string()))?;
+                inventory.iter_mut().for_each(|item| {
+                    item.branch = branch.to_string();
+                });
                 kv.set(
                     ctx,
                     &SetRequest {
@@ -36,6 +39,14 @@ impl MessageSubscriber for CorporatedashboardActor {
                         value: serde_json::to_string(&inventory)
                             .map_err(|e| RpcError::Ser(e.to_string()))?,
                         expires: 0,
+                    },
+                )
+                .await?;
+                kv.set_add(
+                    ctx,
+                    &SetAddRequest {
+                        set_name: "branches".to_string(),
+                        value: branch.to_string(),
                     },
                 )
                 .await?;
@@ -65,16 +76,23 @@ impl HttpServer for CorporatedashboardActor {
                 HttpResponse::ok("Rundown requested")
             }
             "inventory" => {
-                let inv: Vec<InventoryItem> = serde_json::from_str(
-                    &KeyValueSender::new()
-                        // TODO: Not hardcode
-                        .get(ctx, "inventory:branch:stanford")
-                        .await?
-                        .value,
-                )
-                .unwrap_or_default();
+                let all_branches = KeyValueSender::new()
+                    .set_query(ctx, "branches")
+                    .await
+                    .unwrap_or_default();
+                let mut all_inventories: Vec<Vec<InventoryItem>> = vec![];
+                for branch in all_branches {
+                    let inv: Vec<InventoryItem> = serde_json::from_str(
+                        &KeyValueSender::new()
+                            .get(ctx, &format!("inventory:branch:{branch}"))
+                            .await?
+                            .value,
+                    )
+                    .unwrap_or_default();
+                    all_inventories.push(inv);
+                }
 
-                HttpResponse::ok(serde_json::to_vec(&inv).unwrap_or_default())
+                HttpResponse::ok(serde_json::to_vec(&all_inventories).unwrap_or_default())
             }
             raw_path => handle_asset_request(raw_path),
         })
@@ -106,6 +124,9 @@ fn handle_asset_request(raw_path: &str) -> HttpResponse {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InventoryItem {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub branch: String,
     pub item_type: String,
     pub quantity: i32,
 }
