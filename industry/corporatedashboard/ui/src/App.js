@@ -27,7 +27,7 @@ function App() {
     // Fetch data from your API endpoint
     fetch("/inventory")
       .then((response) => response.json())
-      .then((data) => setInventoryData(data.flat(Infinity)))
+      .then((data) => setInventoryData(data.flat(Infinity).sort((a, b) => a.branch.localeCompare(b.branch))))
       .catch((error) => {
         setInventoryData(backupData);
         console.error("Error fetching data:", error);

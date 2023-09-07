@@ -1,4 +1,4 @@
-name = "branchmanager"
+name = "BranchManager"
 language = "rust"
 type = "actor"
 
