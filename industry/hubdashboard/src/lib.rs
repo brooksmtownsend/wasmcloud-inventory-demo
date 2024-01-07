@@ -80,8 +80,15 @@ impl HttpServer for HubdashboardActor {
                 let kv = KeyValueSender::new();
                 for unit in all_units {
                     kv.del(ctx, &format!("inventory:unit:{unit}")).await?;
+                    kv.set_del(
+                        ctx,
+                        &SetDelRequest {
+                            set_name: "units".to_string(),
+                            value: unit,
+                        },
+                    )
+                    .await?;
                 }
-                kv.del(ctx, "units").await?;
                 HttpResponse::ok("Inventory cleared")
             }
             "inventory" => {
