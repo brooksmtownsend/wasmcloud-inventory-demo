@@ -10,7 +10,7 @@ spec:
     - name: branchmanager
       type: actor
       properties:
-        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/branchmanager:0.2.0
+        image: file:///Users/brooks/github.com/brooksmtownsend/wasmcon-backend-cdn/industry/branchmanager/build/branchmanager_s.wasm
       traits:
         - type: daemonscaler
           properties:
@@ -36,7 +36,7 @@ spec:
     - name: corporatedashboard
       type: actor
       properties:
-        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/corporatedashboard:0.2.0
+        image: file:///Users/brooks/github.com/brooksmtownsend/wasmcon-backend-cdn/industry/corporatedashboard/build/corporatedashboard_s.wasm
       traits:
         - type: daemonscaler
           properties:

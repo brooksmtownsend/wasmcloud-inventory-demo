@@ -6,6 +6,8 @@ use wasmcloud_interface_messaging::*;
 
 mod inventory;
 use inventory::*;
+mod ui;
+use ui::Asset;
 
 const TOPIC_PREFIX: &str = "munderdifflin.";
 const BRANCH_INFO: &str = "branchinfo";
@@ -24,16 +26,7 @@ impl MessageSubscriber for BranchmanagerActor {
         match topic {
             // Listen on munderdifflin.rundown, publish all inventory contents to munderdifflin.rundown.<branch>
             "rundown" => {
-                let all_categories = kv.set_query(ctx, INVENTORY_KINDS).await.unwrap_or_default();
-                let mut all_inventories = vec![];
-                for cat in all_categories {
-                    let inv: i32 = kv
-                        .get(ctx, &format!("inventory:{cat}"))
-                        .await
-                        .map(|i| i.value.parse::<i32>().unwrap_or(0))
-                        .unwrap_or(0);
-                    all_inventories.push(InventoryItem::new(cat, inv));
-                }
+                let all_inventories = all_inventories(&kv, ctx).await;
                 let this_branch = kv
                     .get(ctx, BRANCH_INFO)
                     .await
@@ -71,6 +64,12 @@ impl MessageSubscriber for BranchmanagerActor {
 impl HttpServer for BranchmanagerActor {
     async fn handle_request(&self, ctx: &Context, req: &HttpRequest) -> RpcResult<HttpResponse> {
         Ok(match req.path.trim_start_matches('/') {
+            // Handle requests for the inventory on /inventory
+            "inventory" => {
+                let kv = KeyValueSender::new();
+                let all_inventories = all_inventories(&kv, ctx).await;
+                HttpResponse::json(all_inventories, 200)?
+            }
             // Handle new shipments on /shipment
             "shipment" => {
                 let kv = KeyValueSender::new();
@@ -104,21 +103,106 @@ impl HttpServer for BranchmanagerActor {
                 let kv = KeyValueSender::new();
                 let incoming_inventory: InventoryItem = serde_json::from_slice(&req.body)
                     .map_err(|e| RpcError::Deser(e.to_string()))?;
-                kv.increment(
-                    ctx,
-                    &IncrementRequest {
-                        key: incoming_inventory.storage_key(),
-                        value: -(incoming_inventory.quantity.abs()),
-                    },
-                )
-                .await?;
-                HttpResponse::ok(format!(
-                    "Removed {} {} from inventory",
-                    incoming_inventory.quantity,
-                    incoming_inventory.item_type()
-                ))
+                let current_amt = kv
+                    .get(ctx, &incoming_inventory.storage_key())
+                    .await
+                    .map(|i| i.value.parse::<i32>().unwrap_or(0))
+                    .unwrap_or(0);
+                if current_amt < incoming_inventory.quantity.abs() {
+                    HttpResponse::bad_request(format!(
+                        "Not enough {} in inventory",
+                        incoming_inventory.item_type()
+                    ))
+                } else {
+                    kv.increment(
+                        ctx,
+                        &IncrementRequest {
+                            key: incoming_inventory.storage_key(),
+                            value: -(incoming_inventory.quantity.abs()),
+                        },
+                    )
+                    .await?;
+                    HttpResponse::ok(format!(
+                        "Removed {} {} from inventory",
+                        incoming_inventory.quantity,
+                        incoming_inventory.item_type()
+                    ))
+                }
             }
-            _ => HttpResponse::not_found(),
+            // Handle setting the name of this branch
+            "name" => {
+                if req.method == "GET" {
+                    let kv = KeyValueSender::new();
+                    let name = kv
+                        .get(ctx, BRANCH_INFO)
+                        .await
+                        .map(|i| if i.exists { i.value } else { "".to_string() })
+                        .unwrap_or("".to_string());
+                    HttpResponse::ok(name)
+                } else if req.method == "POST" {
+                    let kv = KeyValueSender::new();
+                    if let Ok(name) = String::from_utf8(req.body.clone()) {
+                        kv.set(
+                            ctx,
+                            &SetRequest {
+                                key: BRANCH_INFO.to_string(),
+                                value: name.to_string(),
+                                expires: 0,
+                            },
+                        )
+                        .await?;
+                        HttpResponse::ok(format!("Set branch name to {}", name))
+                    } else {
+                        HttpResponse::bad_request("Invalid branch name")
+                    }
+                } else {
+                    HttpResponse::bad_request("Invalid method")
+                }
+            }
+            raw_path => handle_asset_request(raw_path),
         })
+    }
+}
+
+/// Helper function to retrieve all inventory items
+async fn all_inventories(kv: &KeyValueSender<WasmHost>, ctx: &Context) -> Vec<InventoryItem> {
+    let all_categories = kv.set_query(ctx, INVENTORY_KINDS).await.unwrap_or_default();
+    let mut all_inventories = vec![];
+    for cat in all_categories {
+        let inv: i32 = kv
+            .get(ctx, &format!("inventory:{cat}"))
+            .await
+            .map(|i| i.value.parse::<i32>().unwrap_or(0))
+            .unwrap_or(0);
+        all_inventories.push(InventoryItem::new(cat, inv));
+    }
+    all_inventories
+}
+
+/// Helper function to fetch the UI asset
+fn handle_asset_request(raw_path: &str) -> HttpResponse {
+    let path = raw_path.trim_start_matches('/');
+    Asset::get(path)
+        .map(|asset| response(Vec::from(asset.data), path))
+        // Simple fallback to grab index.html pages when the path is the root of a page or subpage
+        .or_else(|| {
+            Asset::get(
+                &format!("{}/index.html", path.trim_end_matches('/').to_owned())
+                    .trim_start_matches('/'),
+            )
+            .map(|asset| response(Vec::from(asset.data), path))
+        })
+        .unwrap_or_else(|| HttpResponse::not_found())
+}
+
+fn response(body: Vec<u8>, path: &str) -> HttpResponse {
+    let mut header = std::collections::HashMap::new();
+    if let Some(content_type) = mime_guess::from_path(path).first() {
+        header.insert("Content-Type".to_string(), vec![content_type.to_string()]);
+    }
+    HttpResponse {
+        status_code: 200,
+        header,
+        body,
     }
 }

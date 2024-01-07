@@ -1,6 +1,6 @@
 [package]
 name = "branchmanager"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Brooks Townsend <brooks@cosmonic.com>"]
 edition = "2021"
 
@@ -10,6 +10,8 @@ name = "branchmanager"
 
 [dependencies]
 futures = "0.3"
+mime_guess = "2.0.4"
+rust-embed = "8.2.0"
 serde = "1.0.188"
 serde_json = "1.0"
 wasmbus-rpc = "0.15"

@@ -1,6 +1,6 @@
 [package]
 name = "corporatedashboard"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Brooks Townsend <brooks@cosmonic.com>"]
 edition = "2021"
 

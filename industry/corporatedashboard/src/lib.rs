@@ -99,29 +99,6 @@ impl HttpServer for CorporatedashboardActor {
     }
 }
 
-/// Helper function to fetch the UI asset
-fn handle_asset_request(raw_path: &str) -> HttpResponse {
-    let path = if raw_path.is_empty() {
-        "index.html"
-    } else {
-        raw_path
-    };
-    // Request for UI asset
-    Asset::get(path)
-        .map(|asset| {
-            let mut header = HashMap::new();
-            if let Some(content_type) = mime_guess::from_path(path).first() {
-                header.insert("Content-Type".to_string(), vec![content_type.to_string()]);
-            }
-            HttpResponse {
-                status_code: 200,
-                header,
-                body: Vec::from(asset.data),
-            }
-        })
-        .unwrap_or_else(|| HttpResponse::not_found())
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InventoryItem {
     #[serde(default)]
@@ -129,4 +106,32 @@ pub struct InventoryItem {
     pub branch: String,
     pub item_type: String,
     pub quantity: i32,
+}
+
+/// Helper function to fetch the UI asset
+fn handle_asset_request(raw_path: &str) -> HttpResponse {
+    let path = raw_path.trim_start_matches('/');
+    Asset::get(path)
+        .map(|asset| response(Vec::from(asset.data), path))
+        // Simple fallback to grab index.html pages when the path is the root of a page or subpage
+        .or_else(|| {
+            Asset::get(
+                &format!("{}/index.html", path.trim_end_matches('/').to_owned())
+                    .trim_start_matches('/'),
+            )
+            .map(|asset| response(Vec::from(asset.data), path))
+        })
+        .unwrap_or_else(|| HttpResponse::not_found())
+}
+
+fn response(body: Vec<u8>, path: &str) -> HttpResponse {
+    let mut header = HashMap::new();
+    if let Some(content_type) = mime_guess::from_path(path).first() {
+        header.insert("Content-Type".to_string(), vec![content_type.to_string()]);
+    }
+    HttpResponse {
+        status_code: 200,
+        header,
+        body,
+    }
 }
