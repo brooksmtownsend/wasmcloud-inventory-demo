@@ -7,4 +7,5 @@ claims = [
     "wasmcloud:messaging",
     "wasmcloud:builtin:logging",
     "wasmcloud:keyvalue",
+    "wasmcloud:httpserver",
 ]

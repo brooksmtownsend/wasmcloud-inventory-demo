@@ -1,4 +1,5 @@
 use wasmbus_rpc::actor::prelude::*;
+use wasmcloud_interface_httpserver::{HttpRequest, HttpResponse, HttpServer, HttpServerReceiver};
 use wasmcloud_interface_keyvalue::*;
 use wasmcloud_interface_logging::info;
 use wasmcloud_interface_messaging::*;
@@ -11,7 +12,7 @@ const BRANCH_INFO: &str = "branchinfo";
 const INVENTORY_KINDS: &str = "inventorykinds";
 
 #[derive(Debug, Default, Actor, HealthResponder)]
-#[services(Actor, MessageSubscriber)]
+#[services(Actor, HttpServer, MessageSubscriber)]
 struct BranchmanagerActor {}
 
 #[async_trait]
@@ -21,41 +22,6 @@ impl MessageSubscriber for BranchmanagerActor {
         let kv = KeyValueSender::new();
 
         match topic {
-            // Handle new shipments on munderdifflin.shipment
-            "shipment" => {
-                let incoming_inventory: InventoryItem = serde_json::from_slice(&msg.body)
-                    .map_err(|e| RpcError::Deser(e.to_string()))?;
-                kv.increment(
-                    ctx,
-                    &IncrementRequest {
-                        key: incoming_inventory.storage_key(),
-                        value: incoming_inventory.quantity.abs(),
-                    },
-                )
-                .await?;
-                kv.set_add(
-                    ctx,
-                    &SetAddRequest {
-                        set_name: INVENTORY_KINDS.to_string(),
-                        value: incoming_inventory.item_type(),
-                    },
-                )
-                .await?;
-            }
-            // Handle new orders on munderdifflin.order
-            "order" => {
-                // Same as shipments, but subtract instead of add
-                let incoming_inventory: InventoryItem = serde_json::from_slice(&msg.body)
-                    .map_err(|e| RpcError::Deser(e.to_string()))?;
-                kv.increment(
-                    ctx,
-                    &IncrementRequest {
-                        key: incoming_inventory.storage_key(),
-                        value: -(incoming_inventory.quantity.abs()),
-                    },
-                )
-                .await?;
-            }
             // Listen on munderdifflin.rundown, publish all inventory contents to munderdifflin.rundown.<branch>
             "rundown" => {
                 let all_categories = kv.set_query(ctx, INVENTORY_KINDS).await.unwrap_or_default();
@@ -98,5 +64,61 @@ impl MessageSubscriber for BranchmanagerActor {
         }
 
         Ok(())
+    }
+}
+
+#[async_trait]
+impl HttpServer for BranchmanagerActor {
+    async fn handle_request(&self, ctx: &Context, req: &HttpRequest) -> RpcResult<HttpResponse> {
+        Ok(match req.path.trim_start_matches('/') {
+            // Handle new shipments on /shipment
+            "shipment" => {
+                let kv = KeyValueSender::new();
+                let incoming_inventory: InventoryItem = serde_json::from_slice(&req.body)
+                    .map_err(|e| RpcError::Deser(e.to_string()))?;
+                kv.increment(
+                    ctx,
+                    &IncrementRequest {
+                        key: incoming_inventory.storage_key(),
+                        value: incoming_inventory.quantity.abs(),
+                    },
+                )
+                .await?;
+                kv.set_add(
+                    ctx,
+                    &SetAddRequest {
+                        set_name: INVENTORY_KINDS.to_string(),
+                        value: incoming_inventory.item_type(),
+                    },
+                )
+                .await?;
+                HttpResponse::ok(format!(
+                    "Added {} {} to inventory",
+                    incoming_inventory.quantity,
+                    incoming_inventory.item_type()
+                ))
+            }
+            // Handle new orders on /order
+            "order" => {
+                // Same as shipments, but subtract instead of add
+                let kv = KeyValueSender::new();
+                let incoming_inventory: InventoryItem = serde_json::from_slice(&req.body)
+                    .map_err(|e| RpcError::Deser(e.to_string()))?;
+                kv.increment(
+                    ctx,
+                    &IncrementRequest {
+                        key: incoming_inventory.storage_key(),
+                        value: -(incoming_inventory.quantity.abs()),
+                    },
+                )
+                .await?;
+                HttpResponse::ok(format!(
+                    "Removed {} {} from inventory",
+                    incoming_inventory.quantity,
+                    incoming_inventory.item_type()
+                ))
+            }
+            _ => HttpResponse::not_found(),
+        })
     }
 }

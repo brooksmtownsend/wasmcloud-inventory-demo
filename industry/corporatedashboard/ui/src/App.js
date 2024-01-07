@@ -66,8 +66,8 @@ function App() {
             </Text>
             <Box width="100%">
               <Box overflowX="auto" textAlign="center" mb={4}>
-                <Button color={WASMCLOUD_COLOR} onClick={fetchInventory} mr={2}>Query Inventory</Button>
                 <Button color={WASMCLOUD_COLOR} onClick={fetchRundown} mr={2}>Request Rundown</Button>
+                <Button color={WASMCLOUD_COLOR} onClick={fetchInventory} mr={2}>Query Inventory</Button>
                 <Menu>
                   {({ isOpen }) => (
                     <>
