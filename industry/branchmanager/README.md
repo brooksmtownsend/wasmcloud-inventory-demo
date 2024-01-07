@@ -4,7 +4,7 @@
 
 The Branch Manager Actor is a wasmCloud microservice developed in Rust to manage inventory for a paper company inspired by the renowned "Dunder Mifflin" from the television series "The Office". This microservice responds to various topics and performs different inventory operations like handling new shipments, orders, and inventory rundowns.
 
-This actor utilizes several wasmCloud interfaces such as `wasmbus_rpc`, `wasmcloud_interface_keyvalue`, `wasmcloud_interface_logging`, and `wasmcloud_interface_messaging` to facilitate interaction with other components and services in the wasmCloud ecosystem.
+This actor utilizes several wasmCloud interfaces such as `wasmbus_rpc`, `wasmcloud_interface_keyvalue`, `wasmcloud_interface_logging`, `wasmcloud_interface_httpserver` and `wasmcloud_interface_messaging` to facilitate interaction with other components and services in the wasmCloud ecosystem.
 
 ## Features
 
@@ -14,11 +14,16 @@ This actor utilizes several wasmCloud interfaces such as `wasmbus_rpc`, `wasmclo
 
 ## Message Topics
 
-The actor responds to the following message topics (with prefix "munderdifflin"):
+The actor responds to the following message topics:
 
-- **shipment**: To handle new shipments and update the inventory accordingly.
-- **order**: To process new orders and update the inventory.
-- **rundown**: To publish a rundown of all inventory contents.
+- **munderdifflin.rundown**: To publish a rundown of all inventory contents.
+
+## HTTP Endpoints
+
+The actor supports the following `POST` endpoints to update inventory:
+
+- **/shipment**: To handle new shipments and update the inventory accordingly.
+- **/order**: To process new orders and update the inventory.
 
 ## Dependencies
 
@@ -28,6 +33,7 @@ This actor uses the following wasmCloud interfaces:
 - `wasmcloud_interface_keyvalue`: To perform key-value operations for inventory management.
 - `wasmcloud_interface_logging`: For logging capabilities.
 - `wasmcloud_interface_messaging`: To handle messaging functionalities.
+- `wasmcloud_interface_httpserver`: To handle local HTTP requests for inventory management.
 
 ## Usage
 

@@ -3,14 +3,14 @@ kind: Application
 metadata:
   name: munder-difflin
   annotations:
-    version: v0.0.8
+    version: v0.1.0
     description: "Industry leading paper company"
 spec:
   components:
     - name: branchmanager
       type: actor
       properties:
-        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/branchmanager:0.1.0
+        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/branchmanager:0.2.0
       traits:
         - type: daemonscaler
           properties:
@@ -28,10 +28,15 @@ spec:
         - type: linkdef
           properties:
             target: keyvalue
+        - type: linkdef
+          properties:
+            target: httpserver_local
+            values:
+              address: 0.0.0.0:8080
     - name: corporatedashboard
       type: actor
       properties:
-        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/corporatedashboard:0.1.0
+        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/corporatedashboard:0.2.0
       traits:
         - type: daemonscaler
           properties:
@@ -55,22 +60,36 @@ spec:
     - name: httpserver
       type: capability
       properties:
-        image: cosmonic.azurecr.io/httpserver_wormhole:0.6.0
+        image: cosmonic.azurecr.io/httpserver_wormhole:0.6.2
         contract: wasmcloud:httpserver
     - name: builtinkv
       type: capability
       properties:
-        image: cosmonic.azurecr.io/builtin_keyvalue:0.2.4
+        image: cosmonic.azurecr.io/builtin_keyvalue:0.2.5
         contract: wasmcloud:keyvalue
     - name: messaging
       type: capability
       properties:
-        image: wasmcloud.azurecr.io/nats_messaging:0.17.3
+        image: wasmcloud.azurecr.io/nats_messaging:0.17.4
         contract: wasmcloud:messaging
       traits:
         - type: daemonscaler
           properties:
             replicas: 1
+    - name: httpserver_local
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/httpserver:0.19.1
+        contract: wasmcloud:httpserver
+        link_name: local
+      traits:
+        - type: daemonscaler
+          properties:
+            replicas: 1
+            spread:
+              - name: branch
+                requirements:
+                  branch: "true"
     - name: keyvalue
       type: capability
       properties:

@@ -113,9 +113,9 @@ checksum = "ca6c635b3aa665c649ad1415f1573c85957dfa47690ec27aebe7ec17efe3c643"
 
 [[package]]
 name = "async-nats"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94e3e851ddf3b62be8a8085e1e453968df9cdbf990a37bbb589b5b4f587c68d7"
+checksum = "8257238e2a3629ee5618502a75d1b91f8017c24638c75349fc8d2d80cf1f7c4c"
 dependencies = [
  "base64 0.21.3",
  "bytes",
@@ -289,12 +289,13 @@ dependencies = [
 
 [[package]]
 name = "branchmanager"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "futures",
  "serde",
  "serde_json",
  "wasmbus-rpc",
+ "wasmcloud-interface-httpserver",
  "wasmcloud-interface-keyvalue",
  "wasmcloud-interface-logging",
  "wasmcloud-interface-messaging",
@@ -2461,9 +2462,9 @@ dependencies = [
 
 [[package]]
 name = "wasmbus-rpc"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2da4e25698e9e15af56e9bb510d233495c4ec9c6bbbf13d046205190dd4ab935"
+checksum = "d17417841089a43a945a31ddfcc0062704a97625fb7ecbfbe91df043d930f05a"
 dependencies = [
  "async-nats",
  "async-trait",
@@ -2497,10 +2498,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasmcloud-interface-keyvalue"
-version = "0.11.0"
+name = "wasmcloud-interface-httpserver"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f53b6d1f3a117eb4ebb33d13d540b17960ea9eeeeae0ab1037b5122c3171bda4"
+checksum = "54caf06ad2db2b2f6bd719ea771c72779cb2fef92c865bde66dad3db63515365"
+dependencies = [
+ "async-trait",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "wasmbus-rpc",
+ "weld-codegen",
+]
+
+[[package]]
+name = "wasmcloud-interface-keyvalue"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f6a1c01ab4f0061c24e7735540e2b678e81e2147a816b8cdd850507d4ebef8f"
 dependencies = [
  "async-trait",
  "log",
@@ -2513,9 +2528,9 @@ dependencies = [
 
 [[package]]
 name = "wasmcloud-interface-logging"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2396289e63986c8516146d6d02fd346569ee23803c5092c40a5b18a0bcc12393"
+checksum = "11043b52876cdf88ec6394b9fd28b512d83b0468210ba0cbe838ef36d17b9b47"
 dependencies = [
  "async-trait",
  "cfg-if",
@@ -2529,9 +2544,9 @@ dependencies = [
 
 [[package]]
 name = "wasmcloud-interface-messaging"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11608f7ac598493d0d8ebbd089c93a7037e013dea108e282f47f1cf1096fa658"
+checksum = "6fe861c87bc80f3670237aefa9530fb7b56ea7b98e37869886bdd5d35d3b6b3e"
 dependencies = [
  "async-trait",
  "log",
