@@ -12,30 +12,27 @@ use ui::Asset;
 
 #[derive(Debug, Default, Actor, HealthResponder)]
 #[services(Actor, HttpServer, MessageSubscriber)]
-struct CorporatedashboardActor {}
+struct HubdashboardActor {}
 
 #[async_trait]
-impl MessageSubscriber for CorporatedashboardActor {
+impl MessageSubscriber for HubdashboardActor {
     async fn handle_message(&self, ctx: &Context, msg: &SubMessage) -> RpcResult<()> {
-        let topic = msg
-            .subject
-            .as_str()
-            .trim_start_matches("corporate.rundown.");
+        let topic = msg.subject.as_str().trim_start_matches("hub.rundown.");
         let kv = KeyValueSender::new();
 
         match topic {
             "" => (),
-            branch => {
+            unit => {
                 // De/serialization trip just to validate typing
                 let mut inventory: Vec<InventoryItem> = serde_json::from_slice(&msg.body)
                     .map_err(|e| RpcError::Deser(e.to_string()))?;
                 inventory.iter_mut().for_each(|item| {
-                    item.branch = branch.to_string();
+                    item.unit = unit.to_string();
                 });
                 kv.set(
                     ctx,
                     &SetRequest {
-                        key: format!("inventory:branch:{branch}"),
+                        key: format!("inventory:unit:{unit}"),
                         value: serde_json::to_string(&inventory)
                             .map_err(|e| RpcError::Ser(e.to_string()))?,
                         expires: 0,
@@ -45,8 +42,8 @@ impl MessageSubscriber for CorporatedashboardActor {
                 kv.set_add(
                     ctx,
                     &SetAddRequest {
-                        set_name: "branches".to_string(),
-                        value: branch.to_string(),
+                        set_name: "units".to_string(),
+                        value: unit.to_string(),
                     },
                 )
                 .await?;
@@ -58,7 +55,7 @@ impl MessageSubscriber for CorporatedashboardActor {
 }
 
 #[async_trait]
-impl HttpServer for CorporatedashboardActor {
+impl HttpServer for HubdashboardActor {
     async fn handle_request(&self, ctx: &Context, req: &HttpRequest) -> RpcResult<HttpResponse> {
         Ok(match req.path.trim_start_matches('/') {
             "rundown" => {
@@ -66,7 +63,7 @@ impl HttpServer for CorporatedashboardActor {
                     .publish(
                         ctx,
                         &PubMessage {
-                            subject: "munderdifflin.rundown".to_string(),
+                            subject: "unit.rundown".to_string(),
                             reply_to: None,
                             body: serde_json::to_vec("heyjimletmegetthatrundownrealquick")
                                 .unwrap_or_default(),
@@ -75,16 +72,28 @@ impl HttpServer for CorporatedashboardActor {
                     .await?;
                 HttpResponse::ok("Rundown requested")
             }
+            "clear" => {
+                let all_units = KeyValueSender::new()
+                    .set_query(ctx, "units")
+                    .await
+                    .unwrap_or_default();
+                let kv = KeyValueSender::new();
+                for unit in all_units {
+                    kv.del(ctx, &format!("inventory:unit:{unit}")).await?;
+                }
+                kv.del(ctx, "units").await?;
+                HttpResponse::ok("Inventory cleared")
+            }
             "inventory" => {
-                let all_branches = KeyValueSender::new()
-                    .set_query(ctx, "branches")
+                let all_units = KeyValueSender::new()
+                    .set_query(ctx, "units")
                     .await
                     .unwrap_or_default();
                 let mut all_inventories: Vec<Vec<InventoryItem>> = vec![];
-                for branch in all_branches {
+                for unit in all_units {
                     let inv: Vec<InventoryItem> = serde_json::from_str(
                         &KeyValueSender::new()
-                            .get(ctx, &format!("inventory:branch:{branch}"))
+                            .get(ctx, &format!("inventory:unit:{unit}"))
                             .await?
                             .value,
                     )
@@ -103,7 +112,7 @@ impl HttpServer for CorporatedashboardActor {
 pub struct InventoryItem {
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    pub branch: String,
+    pub unit: String,
     pub item_type: String,
     pub quantity: i32,
 }

@@ -398,23 +398,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
 
 [[package]]
-name = "corporatedashboard"
-version = "0.3.0"
-dependencies = [
- "async-trait",
- "futures",
- "mime_guess",
- "rust-embed",
- "serde",
- "serde_bytes",
- "serde_json",
- "wasmbus-rpc",
- "wasmcloud-interface-httpserver",
- "wasmcloud-interface-keyvalue",
- "wasmcloud-interface-messaging",
-]
-
-[[package]]
 name = "cpufeatures"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -882,6 +865,23 @@ name = "httpdate"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
+
+[[package]]
+name = "hubdashboard"
+version = "0.3.0"
+dependencies = [
+ "async-trait",
+ "futures",
+ "mime_guess",
+ "rust-embed",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "wasmbus-rpc",
+ "wasmcloud-interface-httpserver",
+ "wasmcloud-interface-keyvalue",
+ "wasmcloud-interface-messaging",
+]
 
 [[package]]
 name = "humantime"

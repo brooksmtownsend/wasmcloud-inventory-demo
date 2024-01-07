@@ -1,12 +1,12 @@
 [package]
-name = "corporatedashboard"
+name = "hubdashboard"
 version = "0.3.0"
 authors = ["Brooks Townsend <brooks@cosmonic.com>"]
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "corporatedashboard"
+name = "hubdashboard"
 
 [dependencies]
 async-trait = "0.1"
