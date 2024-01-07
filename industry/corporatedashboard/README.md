@@ -1,39 +1,43 @@
-# Fruit Jokes Microservice
+# Corporate Dashboard Microservice
 
-This microservice, built in Rust, serves random fruit jokes to users. Users can also contribute their own jokes by sending a `POST` request.
+This microservice, built in Rust, manages and displays a corporate dashboard, handling inventory data and requests for corporate rundowns.
 
 ## Features
 
-- **Add Jokes**: Send a `POST` request with your joke, and it'll be added to the collection of fruit jokes.
-- **Retrieve Random Jokes**: A `GET` request to the service returns a random fruit joke.
+- **Handle Inventory Data**: Processes inventory updates from different branches and stores them using a key-value store.
+- **Request Corporate Rundowns**: Facilitates users in requesting rundowns of corporate data.
+- **Serve Dashboard UI**: Provides a user interface for viewing and interacting with the corporate dashboard.
 
 ## Dependencies
 
-This microservice leverages the following wasmCloud capabilities:
+This microservice utilizes the following wasmCloud capabilities:
 
-- `wasmbus_rpc::actor::prelude::*` for general Actor support.
-- `wasmcloud_interface_httpserver` to serve the jokes via HTTP.
-- `wasmcloud_interface_keyvalue` for storing the jokes in a set.
-- `wasmcloud_interface_numbergen` to generate random numbers to retrieve random jokes.
+- `wasmbus_rpc::actor::prelude::*` for Actor support.
+- `wasmcloud_interface_httpserver` to serve the dashboard and handle HTTP requests.
+- `wasmcloud_interface_keyvalue` for managing inventory data storage.
+- `wasmcloud_interface_messaging` to handle messages and requests for rundowns.
 
 ## Endpoints
 
-- `POST /`: Add a new joke to the collection. Ensure the body contains the joke text.
-- `GET /`: Retrieve a random fruit joke from the collection.
+- `GET /rundown`: Initiates a request to publish a rundown of corporate data.
+- `GET /inventory`: Retrieves the inventory data for all branches.
 
-## Constants
+## Data Structures
 
-- `JOKES_KEY`: This key is used to store the jokes in a set.
-- `FALLBACK_JOKE`: In case a joke isn't found, this fallback joke will be returned.
+- `InventoryItem`: Represents an item in the inventory with attributes like branch, item type, and quantity.
+
+## Message Handling
+
+Handles incoming messages related to inventory updates. Validates and processes the data before storing it.
 
 ## Error Handling
 
-If the sent joke in a `POST` request cannot be parsed, the microservice responds with a cheeky error message: "That joke was bad, I'm not even going to store it".
+Includes error handling for failed deserialization of messages and HTTP requests, providing appropriate responses.
 
 ## Usage
 
-Deploy this microservice with wasmCloud, and it's ready to serve jokes and collect new ones.
+Deploy this microservice with wasmCloud to manage and display corporate inventory data and handle rundown requests.
 
 ## Contributing
 
-Feel free to submit pull requests or raise issues if you find any. Every joke is appreciated, but keep them fun and light-hearted!
+Contributors are welcome to improve functionality or add new features. Please adhere to Rust's coding standards and provide tests for new features.

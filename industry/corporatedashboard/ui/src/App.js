@@ -8,16 +8,14 @@ import {
   theme,
   Button,
   Menu, MenuButton, MenuList, MenuItem,
-  Table, Thead, Tbody, Tr, Th, Td
+  Table, Thead, Tbody, Tr, Th, Td, HStack
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import { Logo } from './Logo';
 
 const WASMCLOUD_COLOR = "#00C389";
 const backupData = [
-  { id: 1, branch: "Stanford", item_type: "Paper", quantity: 500 },
-  { id: 2, branch: "Stanford", item_type: "Printers", quantity: 10 },
-  { id: 3, branch: "Stanford", item_type: "Ink", quantity: 20 },
+  { id: 1, branch: "N/A", item_type: "None", quantity: 0 },
 ];
 
 function App() {
@@ -43,6 +41,11 @@ function App() {
       });
   };
 
+  const continualFetch = () => {
+    fetchRundown();
+    setTimeout(fetchInventory, 1000);
+  };
+
   const [selectedItem, setSelectedItem] = React.useState(null);
 
   const handleMenuItemClick = (itemValue) => {
@@ -52,37 +55,38 @@ function App() {
 
   useEffect(() => {
     fetchInventory(); // Fetch data when the component mounts
+    setInterval(continualFetch, 3000); // Continually poll for updates
   }, []);
 
   return (
     <ChakraProvider theme={theme}>
       <Box textAlign="center" fontSize="xl">
-        <Grid minH="100vh" p={3}>
+        <Grid p={3}>
           <ColorModeSwitcher justifySelf="flex-end" />
           <VStack spacing={4}>
-            <Logo h="20vmin" pointerEvents="none" />
-            <Text>
-              Branch Dashboard
-            </Text>
+            <Logo h="200px" pointerEvents="none" />
             <Box width="100%">
               <Box overflowX="auto" textAlign="center" mb={4}>
-                <Button color={WASMCLOUD_COLOR} onClick={fetchRundown} mr={2}>Request Rundown</Button>
-                <Button color={WASMCLOUD_COLOR} onClick={fetchInventory} mr={2}>Query Inventory</Button>
-                <Menu>
-                  {({ isOpen }) => (
-                    <>
-                      <MenuButton isActive={isOpen} as={Button} rightIcon="▼">
-                        Select Branch
-                      </MenuButton>
-                      <MenuList>
-                        <MenuItem onClick={() => handleMenuItemClick(null)}>All</MenuItem>
-                        {[...new Set(inventoryData.map((i) => i.branch))].map((item) => (
-                          <MenuItem key={item} onClick={() => handleMenuItemClick(item)}>{item}</MenuItem>
-                        ))}
-                      </MenuList>
-                    </>
-                  )}
-                </Menu>
+                <HStack justifyContent="center">
+                  <Text>
+                    Hub Dashboard
+                  </Text>
+                  <Menu>
+                    {({ isOpen }) => (
+                      <>
+                        <MenuButton isActive={isOpen} as={Button} rightIcon="▼">
+                          Select Branch
+                        </MenuButton>
+                        <MenuList>
+                          <MenuItem onClick={() => handleMenuItemClick(null)}>All</MenuItem>
+                          {[...new Set(inventoryData.map((i) => i.branch))].map((item) => (
+                            <MenuItem key={item} onClick={() => handleMenuItemClick(item)}>{item}</MenuItem>
+                          ))}
+                        </MenuList>
+                      </>
+                    )}
+                  </Menu>
+                </HStack>
                 <Table variant="simple" width="100%" maxWidth="50vw" mx="auto">
                   <Thead>
                     <Tr>

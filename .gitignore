@@ -1,5 +1,7 @@
 # Ignore Rust things
 **/target/*
 **/build/*
+**/keys/*
 
 .DS_Store
+*.rdb
