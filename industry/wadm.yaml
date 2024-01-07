@@ -7,10 +7,10 @@ metadata:
     description: "Industry inventory management system"
 spec:
   components:
-    - name: branchmanager
+    - name: unitmanager
       type: actor
       properties:
-        image: file:///Users/brooks/github.com/brooksmtownsend/wasmcon-backend-cdn/industry/branchmanager/build/branchmanager_s.wasm
+        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/unitmanager:0.3.0
       traits:
         - type: daemonscaler
           properties:
@@ -24,7 +24,7 @@ spec:
             target: messaging
             values:
               SUBSCRIPTION: unit.>
-              URI: nats://127.0.0.1:4223
+              URI: nats://0.0.0.0:4223
         - type: linkdef
           properties:
             target: keyvalue
@@ -33,16 +33,16 @@ spec:
             target: httpserver_local
             values:
               address: 0.0.0.0:8080
-    - name: corporatedashboard
+    - name: hubdashboard
       type: actor
       properties:
-        image: file:///Users/brooks/github.com/brooksmtownsend/wasmcon-backend-cdn/industry/corporatedashboard/build/corporatedashboard_s.wasm
+        image: registry.cosmonic.sh/374b6434-f18d-4b93-8743-bcd3089e4d5b/hubdashboard:0.3.0
       traits:
         - type: daemonscaler
           properties:
             replicas: 3
             spread:
-              - name: corporate
+              - name: hub
                 requirements:
                   cosmonic_managed: "true"
         - type: linkdef
@@ -62,11 +62,27 @@ spec:
       properties:
         image: cosmonic.azurecr.io/httpserver_wormhole:0.6.2
         contract: wasmcloud:httpserver
+      traits:
+        - properties:
+            replicas: 1
+            spread:
+              - name: oncosmonic
+                requirements:
+                  cosmonic_managed: "true"
+          type: spreadscaler
     - name: builtinkv
       type: capability
       properties:
         image: cosmonic.azurecr.io/builtin_keyvalue:0.2.5
         contract: wasmcloud:keyvalue
+      traits:
+        - properties:
+            replicas: 1
+            spread:
+              - name: oncosmonic
+                requirements:
+                  cosmonic_managed: "true"
+          type: spreadscaler
     - name: messaging
       type: capability
       properties:
