@@ -1,10 +1,10 @@
 apiVersion: core.oam.dev/v1beta1
 kind: Application
 metadata:
-  name: industry-inventory
+  name: munder-difflin
   annotations:
-    version: v0.3.0
-    description: "Industry inventory management system"
+    version: v0.1.0-local
+    description: "Industry leading paper company"
 spec:
   components:
     - name: branchmanager
@@ -16,15 +16,14 @@ spec:
           properties:
             replicas: 1
             spread:
-              - name: unit
+              - name: branch
                 requirements:
-                  unit: "true"
+                  branch: "true"
         - type: linkdef
           properties:
             target: messaging
             values:
-              SUBSCRIPTION: unit.>
-              URI: nats://127.0.0.1:4223
+              SUBSCRIPTION: munderdifflin.>
         - type: linkdef
           properties:
             target: keyvalue
@@ -42,31 +41,23 @@ spec:
           properties:
             replicas: 3
             spread:
-              - name: corporate
+              - name: branch
                 requirements:
-                  cosmonic_managed: "true"
+                  branch: "true"
         - type: linkdef
           properties:
             target: messaging
             values:
-              SUBSCRIPTION: hub.>
+              SUBSCRIPTION: corporate.>
         - type: linkdef
           properties:
-            target: builtinkv
+            target: keyvalue
         - type: linkdef
           properties:
-            target: httpserver
+            target: httpserver_local
+            values:
+              address: 0.0.0.0:8081
 
-    - name: httpserver
-      type: capability
-      properties:
-        image: cosmonic.azurecr.io/httpserver_wormhole:0.6.2
-        contract: wasmcloud:httpserver
-    - name: builtinkv
-      type: capability
-      properties:
-        image: cosmonic.azurecr.io/builtin_keyvalue:0.2.5
-        contract: wasmcloud:keyvalue
     - name: messaging
       type: capability
       properties:
@@ -87,9 +78,9 @@ spec:
           properties:
             replicas: 1
             spread:
-              - name: unit
+              - name: branch
                 requirements:
-                  unit: "true"
+                  branch: "true"
     - name: keyvalue
       type: capability
       properties:
@@ -100,6 +91,6 @@ spec:
           properties:
             replicas: 1
             spread:
-              - name: unit
+              - name: branch
                 requirements:
-                  unit: "true"
+                  branch: "true"

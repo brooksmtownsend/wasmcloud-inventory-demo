@@ -1,12 +1,12 @@
-# Corporate Dashboard Microservice
+# Hub Dashboard Microservice
 
-This microservice, built in Rust, manages and displays a corporate dashboard, handling inventory data and requests for corporate rundowns.
+This microservice, built in Rust, manages and displays a hub dashboard, handling inventory data and requests for inventory rundowns.
 
 ## Features
 
 - **Handle Inventory Data**: Processes inventory updates from different branches and stores them using a key-value store.
-- **Request Corporate Rundowns**: Facilitates users in requesting rundowns of corporate data.
-- **Serve Dashboard UI**: Provides a user interface for viewing and interacting with the corporate dashboard.
+- **Request Inventory Rundowns**: Facilitates users in requesting rundowns of inventory data.
+- **Serve Dashboard UI**: Provides a user interface for viewing and interacting with the hub dashboard.
 
 ## Dependencies
 
@@ -19,7 +19,7 @@ This microservice utilizes the following wasmCloud capabilities:
 
 ## Endpoints
 
-- `GET /rundown`: Initiates a request to publish a rundown of corporate data.
+- `GET /rundown`: Initiates a request to publish a request rundown for inventory data.
 - `GET /inventory`: Retrieves the inventory data for all branches.
 
 ## Data Structures
@@ -36,7 +36,7 @@ Includes error handling for failed deserialization of messages and HTTP requests
 
 ## Usage
 
-Deploy this microservice with wasmCloud to manage and display corporate inventory data and handle rundown requests.
+Deploy this microservice with wasmCloud to manage and display inventory data from all deployed units.
 
 ## Contributing
 

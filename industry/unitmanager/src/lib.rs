@@ -9,40 +9,40 @@ use inventory::*;
 mod ui;
 use ui::Asset;
 
-const TOPIC_PREFIX: &str = "munderdifflin.";
-const BRANCH_INFO: &str = "branchinfo";
+const TOPIC_PREFIX: &str = "unit.";
+const UNIT_INFO: &str = "unitinfo";
 const INVENTORY_KINDS: &str = "inventorykinds";
 
 #[derive(Debug, Default, Actor, HealthResponder)]
 #[services(Actor, HttpServer, MessageSubscriber)]
-struct BranchmanagerActor {}
+struct UnitmanagerActor {}
 
 #[async_trait]
-impl MessageSubscriber for BranchmanagerActor {
+impl MessageSubscriber for UnitmanagerActor {
     async fn handle_message(&self, ctx: &Context, msg: &SubMessage) -> RpcResult<()> {
         let topic = msg.subject.as_str().trim_start_matches(TOPIC_PREFIX);
         let kv = KeyValueSender::new();
 
         match topic {
-            // Listen on munderdifflin.rundown, publish all inventory contents to munderdifflin.rundown.<branch>
+            // Listen on unit.rundown, publish all inventory contents to unit.rundown.<unit>
             "rundown" => {
                 let all_inventories = all_inventories(&kv, ctx).await;
-                let this_branch = kv
-                    .get(ctx, BRANCH_INFO)
+                let this_unit = kv
+                    .get(ctx, UNIT_INFO)
                     .await
                     .map(|i| {
                         if i.exists {
                             i.value
                         } else {
-                            "michaelscottpapercompany".to_string()
+                            "nohub".to_string()
                         }
                     })
-                    .unwrap_or("michaelscottpapercompany".to_string());
+                    .unwrap_or("nohub".to_string());
                 MessagingSender::new()
                     .publish(
                         ctx,
                         &PubMessage {
-                            subject: format!("corporate.rundown.{this_branch}"),
+                            subject: format!("hub.rundown.{this_unit}"),
                             reply_to: None,
                             body: serde_json::to_vec(&all_inventories).unwrap_or_default(),
                         },
@@ -61,7 +61,7 @@ impl MessageSubscriber for BranchmanagerActor {
 }
 
 #[async_trait]
-impl HttpServer for BranchmanagerActor {
+impl HttpServer for UnitmanagerActor {
     async fn handle_request(&self, ctx: &Context, req: &HttpRequest) -> RpcResult<HttpResponse> {
         Ok(match req.path.trim_start_matches('/') {
             // Handle requests for the inventory on /inventory
@@ -129,12 +129,12 @@ impl HttpServer for BranchmanagerActor {
                     ))
                 }
             }
-            // Handle setting the name of this branch
+            // Handle setting the name of this unit
             "name" => {
                 if req.method == "GET" {
                     let kv = KeyValueSender::new();
                     let name = kv
-                        .get(ctx, BRANCH_INFO)
+                        .get(ctx, UNIT_INFO)
                         .await
                         .map(|i| if i.exists { i.value } else { "".to_string() })
                         .unwrap_or("".to_string());
@@ -145,15 +145,15 @@ impl HttpServer for BranchmanagerActor {
                         kv.set(
                             ctx,
                             &SetRequest {
-                                key: BRANCH_INFO.to_string(),
+                                key: UNIT_INFO.to_string(),
                                 value: name.to_string(),
                                 expires: 0,
                             },
                         )
                         .await?;
-                        HttpResponse::ok(format!("Set branch name to {}", name))
+                        HttpResponse::ok(format!("Set unit name to {}", name))
                     } else {
-                        HttpResponse::bad_request("Invalid branch name")
+                        HttpResponse::bad_request("Invalid unit name")
                     }
                 } else {
                     HttpResponse::bad_request("Invalid method")

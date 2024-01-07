@@ -13,37 +13,34 @@ import {
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import { Logo } from './Logo';
 
-const WASMCLOUD_COLOR = "#00C389";
-const backupData = [
-  { id: 1, branch: "N/A", item_type: "None", quantity: 0 },
-];
-
 function App() {
   const [inventoryData, setInventoryData] = useState([]);
 
   const fetchInventory = () => {
-    // Fetch data from your API endpoint
-    fetch("/inventory")
-      .then((response) => response.json())
-      .then((data) => setInventoryData(data.flat(Infinity).sort((a, b) => a.branch.localeCompare(b.branch))))
-      .catch((error) => {
-        setInventoryData(backupData);
-        console.error("Error fetching data:", error);
-      });
-  };
-
-  const fetchRundown = () => {
+    // Requests rundown from units, then fetches updated inventory
     fetch("/rundown")
-      .then((response) => console.dir(response))
+      .then((response) => {
+        console.dir(response);
+        // Fetch data from your API endpoint
+        fetch("/inventory")
+          .then((response) => response.json())
+          .then((data) => setInventoryData(data.flat(Infinity).sort((a, b) => a.unit.localeCompare(b.unit))))
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+          });
+      })
       .catch((error) => {
-        setInventoryData(backupData);
         console.error("Error fetching data:", error);
       });
   };
 
-  const continualFetch = () => {
-    fetchRundown();
-    setTimeout(fetchInventory, 1000);
+  const clearInventory = () => {
+    fetch("/clear", { method: "DEL" })
+      .then((response) => console.dir(response))
+      .then((_response) => fetchInventory())
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   };
 
   const [selectedItem, setSelectedItem] = React.useState(null);
@@ -55,7 +52,7 @@ function App() {
 
   useEffect(() => {
     fetchInventory(); // Fetch data when the component mounts
-    setInterval(continualFetch, 3000); // Continually poll for updates
+    setInterval(fetchInventory, 2000); // Continually poll for updates
   }, []);
 
   return (
@@ -67,30 +64,31 @@ function App() {
             <Logo h="200px" pointerEvents="none" />
             <Box width="100%">
               <Box overflowX="auto" textAlign="center" mb={4}>
+                <Text fontSize="2xl">
+                  Hub Dashboard
+                </Text>
                 <HStack justifyContent="center">
-                  <Text>
-                    Hub Dashboard
-                  </Text>
                   <Menu>
                     {({ isOpen }) => (
                       <>
                         <MenuButton isActive={isOpen} as={Button} rightIcon="▼">
-                          Select Branch
+                          Select Unit
                         </MenuButton>
                         <MenuList>
                           <MenuItem onClick={() => handleMenuItemClick(null)}>All</MenuItem>
-                          {[...new Set(inventoryData.map((i) => i.branch))].map((item) => (
+                          {[...new Set(inventoryData.map((i) => i.unit))].map((item) => (
                             <MenuItem key={item} onClick={() => handleMenuItemClick(item)}>{item}</MenuItem>
                           ))}
                         </MenuList>
                       </>
                     )}
                   </Menu>
+                  <Button color="red" onClick={() => clearInventory()}>Clear</Button>
                 </HStack>
                 <Table variant="simple" width="100%" maxWidth="50vw" mx="auto">
                   <Thead>
                     <Tr>
-                      <Th>Branch</Th>
+                      <Th>Unit</Th>
                       <Th>Item</Th>
                       <Th textAlign="right">Quantity</Th> {/* Right-align Quantity column */}
                     </Tr>
@@ -100,11 +98,11 @@ function App() {
                       if (!selectedItem) {
                         return true;
                       } else {
-                        return item.branch === selectedItem;
+                        return item.unit === selectedItem;
                       }
                     }).map((item) => (
                       <Tr key={item.id}>
-                        <Td>{item.branch}</Td>
+                        <Td>{item.unit}</Td>
                         <Td>{item.item_type}</Td>
                         <Td textAlign="right">{item.quantity}</Td> {/* Right-align Quantity cell */}
                       </Tr>
